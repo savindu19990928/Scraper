@@ -1,8 +1,6 @@
 const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
-const multer = require('multer');
-const { Buffer } = require('buffer');
 const axios = require('axios');
 const FB = require('fb');
 const passport = require('passport');
@@ -52,7 +50,6 @@ const uploadVideo = (accessToken, videoData, description) => {
                 console.log(!res ? 'error occurred' : res.error);
                 return;
             }
-            console.log('Video ID: ' + res.id);
         }
     );
 };
@@ -77,7 +74,7 @@ app.set('views', 'views');
 app.get('/add', async function (req, res) {
     res.end();
 
-    const users = ['devanjeesuhanya'];
+    const users = ['devanjeesuhanya','thiyasha_p'];
 
     users.forEach(async (user) => {
         const options = {
@@ -97,35 +94,41 @@ app.get('/add', async function (req, res) {
             const response = await axios.request(options);
             response.data.data.videos.forEach(async video => {
                 Link.findOne({ link: video.video_id }).then(async result => {
-                    if (result) {
-                        return;
-                    } else {
-                        const url = 'https://www.tiktok.com/@' + user + '/video/' + video.video_id;
-                        const options1 = {
-                            method: 'GET',
-                            url: 'https://tiktok-full-info-without-watermark.p.rapidapi.com/vid/index',
-                            params: {
-                                url: url
-                            },
-                            headers: {
-                                'X-RapidAPI-Key': 'f34902baffmsh4d26ee5486241d5p188ddfjsnf62ba6a713ab',
-                                'X-RapidAPI-Host': 'tiktok-full-info-without-watermark.p.rapidapi.com'
+                    let delay = 0;
+                    setTimeout(async () => {
+                        if (result) {
+                            return;
+                        } else {
+                            const url = 'https://www.tiktok.com/@' + user + '/video/' + video.video_id;
+                            const options1 = {
+                                method: 'GET',
+                                url: 'https://tiktok-full-info-without-watermark.p.rapidapi.com/vid/index',
+                                params: {
+                                    url: url
+                                },
+                                headers: {
+                                    'X-RapidAPI-Key': 'f34902baffmsh4d26ee5486241d5p188ddfjsnf62ba6a713ab',
+                                    'X-RapidAPI-Host': 'tiktok-full-info-without-watermark.p.rapidapi.com'
+                                }
+                            };
+    
+                            try {
+                                const response = await axios.request(options1);
+                                const hashtagsList = await extractHashtags(video.title);
+                                const livkID = new Link({
+                                    link: video.video_id,
+                                    caption: hashtagsList
+                                });
+                                await livkID.save();
+                                const hashtags = hashtagsList.join(' ');
+                                delay(1000)
+                                uploadVideo(access_token, response.data.video[0], hashtags);
+                            } catch (error) {
+                                console.error(error);
                             }
-                        };
-
-                        try {
-                            const response = await axios.request(options1);
-                            uploadVideo(access_token, response.data.video[0], 'testing 1');
-                        } catch (error) {
-                            console.error(error);
                         }
-
-                        const livkID = new Link({
-                            link: video.video_id,
-                            caption: extractHashtags(video.title)
-                        });
-                        await livkID.save();
-                    }
+                    }, delay);
+                    delay += 1000;
                 });
             });
         } catch (error) {
