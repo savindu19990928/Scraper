@@ -115,7 +115,6 @@ app.get('/add', async function (req, res) {
 
                         try {
                             const response = await axios.request(options1);
-                            console.log(response.data.video[0]);
                             uploadVideo(access_token, response.data.video[0], 'testing 1');
                         } catch (error) {
                             console.error(error);
@@ -143,7 +142,6 @@ app.get('/', function (req, res) {
         .then(res => res.json())
         .then((json) => {
             access_token = json.access_token;
-            console.log(access_token);
             res.redirect('/add');
         })
         .catch(err => console.error('Error fetching access token:', err));
