@@ -28,15 +28,15 @@ function extractHashtags(text) {
 }
 
 passport.use(new FacebookTokenStrategy({
-    clientID: '1164932591431909',
-    clientSecret: '5b4d64ec490b5637fca223907de1c8be'
+    clientID: '896736762233559',
+    clientSecret: '2536cd7e3600a7159a4863b2c9dc3962'
 }, function (accessToken, refreshToken, profile, done) {
     done(null, profile);
 }));
 
 
 const uploadVideo = (accessToken, videoData, description) => {
-    FB.setAccessToken(accessToken);
+    FB.setAccessToken('EAAMvk8wrgtcBO9lTaDt4lEbF79k3NebM0kY9m7bP7Rdj8GJkjv3qFl753IaUjwblt07yyy9j7r4fLgvxN2uSB9ggjmKunYPLrcHLftCFPtBciBeD6rVNbxUIbmbsSfeMxBWIklSoonBJEzW4jdPkKUYJLoHhPuMPi3hkUG4HdOuwTE4ucHuj84xEmeQZD');
 
     const formData = {
         file_url: videoData,
@@ -137,7 +137,7 @@ app.get('/add', async function (req, res) {
 });
 
 app.get('/', function (req, res) {
-    const url = `https://graph.facebook.com/oauth/access_token?client_id=1164932591431909&client_secret=5b4d64ec490b5637fca223907de1c8be&grant_type=client_credentials`;
+    const url = `https://graph.facebook.com/oauth/access_token?client_id=896736762233559&client_secret=2536cd7e3600a7159a4863b2c9dc3962&grant_type=client_credentials`;
     fetch(url)
         .then(res => res.json())
         .then((json) => {
