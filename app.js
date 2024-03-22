@@ -74,7 +74,7 @@ app.set('views', 'views');
 app.get('/add', async function (req, res) {
     res.end();
 
-    const users = ['devanjeesuhanya', 'thiyasha_p'];
+    const users = ['devanjeesuhanya', 'thiyasha_p', 'osandi_24'];
     let delayUser = 0;
     users.forEach(async (user) => {
         setTimeout(async () => {
@@ -93,8 +93,8 @@ app.get('/add', async function (req, res) {
 
             try {
                 const response = await axios.request(options);
+                let delay = 0;
                 response.data.data.videos.forEach(async video => {
-                    let delay = 0;
                     Link.findOne({ link: video.video_id }).then(async result => {
                         setTimeout(async () => {
                             if (result) {
@@ -122,7 +122,6 @@ app.get('/add', async function (req, res) {
                                     });
                                     await livkID.save();
                                     const hashtags = hashtagsList.join(' ');
-                                    delay(1000)
                                     uploadVideo(access_token, response.data.video[0], hashtags);
                                 } catch (error) {
                                     console.error(error);
