@@ -74,66 +74,69 @@ app.set('views', 'views');
 app.get('/add', async function (req, res) {
     res.end();
 
-    const users = ['devanjeesuhanya','thiyasha_p'];
-
+    const users = ['devanjeesuhanya', 'thiyasha_p'];
+    let delayUser = 0;
     users.forEach(async (user) => {
-        const options = {
-            method: 'GET',
-            url: 'https://tiktok-scraper7.p.rapidapi.com/user/posts',
-            params: {
-                unique_id: user,
-                count: '1000'
-            },
-            headers: {
-                'X-RapidAPI-Key': 'f34902baffmsh4d26ee5486241d5p188ddfjsnf62ba6a713ab',
-                'X-RapidAPI-Host': 'tiktok-scraper7.p.rapidapi.com'
-            }
-        };
+        setTimeout(async () => {
+            const options = {
+                method: 'GET',
+                url: 'https://tiktok-scraper7.p.rapidapi.com/user/posts',
+                params: {
+                    unique_id: user,
+                    count: '1000'
+                },
+                headers: {
+                    'X-RapidAPI-Key': 'f34902baffmsh4d26ee5486241d5p188ddfjsnf62ba6a713ab',
+                    'X-RapidAPI-Host': 'tiktok-scraper7.p.rapidapi.com'
+                }
+            };
 
-        try {
-            const response = await axios.request(options);
-            response.data.data.videos.forEach(async video => {
-                Link.findOne({ link: video.video_id }).then(async result => {
+            try {
+                const response = await axios.request(options);
+                response.data.data.videos.forEach(async video => {
                     let delay = 0;
-                    setTimeout(async () => {
-                        if (result) {
-                            return;
-                        } else {
-                            const url = 'https://www.tiktok.com/@' + user + '/video/' + video.video_id;
-                            const options1 = {
-                                method: 'GET',
-                                url: 'https://tiktok-full-info-without-watermark.p.rapidapi.com/vid/index',
-                                params: {
-                                    url: url
-                                },
-                                headers: {
-                                    'X-RapidAPI-Key': 'f34902baffmsh4d26ee5486241d5p188ddfjsnf62ba6a713ab',
-                                    'X-RapidAPI-Host': 'tiktok-full-info-without-watermark.p.rapidapi.com'
+                    Link.findOne({ link: video.video_id }).then(async result => {
+                        setTimeout(async () => {
+                            if (result) {
+                                return;
+                            } else {
+                                const url = 'https://www.tiktok.com/@' + user + '/video/' + video.video_id;
+                                const options1 = {
+                                    method: 'GET',
+                                    url: 'https://tiktok-full-info-without-watermark.p.rapidapi.com/vid/index',
+                                    params: {
+                                        url: url
+                                    },
+                                    headers: {
+                                        'X-RapidAPI-Key': 'f34902baffmsh4d26ee5486241d5p188ddfjsnf62ba6a713ab',
+                                        'X-RapidAPI-Host': 'tiktok-full-info-without-watermark.p.rapidapi.com'
+                                    }
+                                };
+
+                                try {
+                                    const response = await axios.request(options1);
+                                    const hashtagsList = await extractHashtags(video.title);
+                                    const livkID = new Link({
+                                        link: video.video_id,
+                                        caption: hashtagsList
+                                    });
+                                    await livkID.save();
+                                    const hashtags = hashtagsList.join(' ');
+                                    delay(1000)
+                                    uploadVideo(access_token, response.data.video[0], hashtags);
+                                } catch (error) {
+                                    console.error(error);
                                 }
-                            };
-    
-                            try {
-                                const response = await axios.request(options1);
-                                const hashtagsList = await extractHashtags(video.title);
-                                const livkID = new Link({
-                                    link: video.video_id,
-                                    caption: hashtagsList
-                                });
-                                await livkID.save();
-                                const hashtags = hashtagsList.join(' ');
-                                delay(1000)
-                                uploadVideo(access_token, response.data.video[0], hashtags);
-                            } catch (error) {
-                                console.error(error);
                             }
-                        }
-                    }, delay);
-                    delay += 1000;
+                        }, delay);
+                        delay += 1000;
+                    });
                 });
-            });
-        } catch (error) {
-            console.error(error);
-        }
+            } catch (error) {
+                console.error(error);
+            }
+        }, delayUser);
+        delayUser += 1;
     });
 
     return res.end();
