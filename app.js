@@ -82,7 +82,7 @@ app.use(express.json({
 app.post('/add', async function (req, res) {
     const usernamesS = req.body.usernames || "";
     if (req.body.pass != "dev@tik@scraper@45") {
-        return;
+        return res.send('Wrong Password!');
     }
     const users = usernamesS.split(" ");
 
@@ -164,6 +164,6 @@ app.get('/', function (req, res) {
     res.render('usernames');
 });
 
-app.listen(process.env.PORT || 5000);
+app.listen(process.env.PORT || 3000);
 //devanjeesuhanya thiyasha_p
 //dev@tik@scraper@45
