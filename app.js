@@ -160,6 +160,11 @@ app.post('/add', async function (req, res) {
     });
 });
 
+app.get('/robots.txt', (req, res) => {
+    const filePath = path.join(__dirname, 'robots.txt');
+    res.sendFile(filePath);
+});
+
 app.get('/', function (req, res) {
     res.render('usernames');
 });
