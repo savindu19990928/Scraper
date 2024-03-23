@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const path = require('path');
 const mongoose = require('mongoose');
 const axios = require('axios');
 const FB = require('fb');
@@ -9,6 +10,8 @@ const FacebookTokenStrategy = require('passport-facebook-token');
 const urI = 'mongodb+srv://devrious:Uzumaki%4045@templates.knku2v7.mongodb.net/scraper?retryWrites=true&w=majority';
 
 let access_token = '';
+
+const delayTime = 9000;
 
 function extractHashtags(text) {
     if (!text) {
@@ -74,13 +77,23 @@ const Link = mongoose.model('link', linkSchema);
 
 app.set('view engine', 'ejs');
 app.set('views', 'views');
+app.use(express.static(path.join(__dirname, 'assets')));
+app.use(express.urlencoded({
+    extended: false
+}));
+app.use(express.json({
+    limit: '5mb'
+}));
 
-app.get('/add', async function (req, res) {
+app.post('/add', async function (req, res) {
+    const usernamesS = req.body.usernames || "";
+    const users = usernamesS.split(" ");
+
+    res.send('SUCCESS');
     res.end();
 
-    const users = ['devanjeesuhanya', 'thiyasha_p', 'osandi_24'];
     users.forEach(async (user) => {
-        // await pauseTime(9000);
+        await pauseTime(delayTime);
         const options = {
             method: 'GET',
             url: 'https://tiktok-scraper7.p.rapidapi.com/user/posts',
@@ -98,7 +111,7 @@ app.get('/add', async function (req, res) {
             const response = await axios.request(options);
             response.data.data.videos.forEach(async video => {
                 Link.findOne({ link: video.video_id }).then(async result => {
-                    // pauseTime(9000);
+                    pauseTime(delayTime);
                     if (result) {
                         return;
                     } else {
@@ -138,14 +151,7 @@ app.get('/add', async function (req, res) {
 });
 
 app.get('/', function (req, res) {
-    const url = `https://graph.facebook.com/oauth/access_token?client_id=896736762233559&client_secret=2536cd7e3600a7159a4863b2c9dc3962&grant_type=client_credentials`;
-    fetch(url)
-        .then(res => res.json())
-        .then((json) => {
-            access_token = json.access_token;
-            res.redirect('/add');
-        })
-        .catch(err => console.error('Error fetching access token:', err));
+    res.render('usernames');
 });
 
 app.listen(process.env.PORT || 5000);
