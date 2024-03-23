@@ -27,14 +27,14 @@ function extractHashtags(text) {
 }
 
 passport.use(new FacebookTokenStrategy({
-    clientID: '1129656188486501',
-    clientSecret: 'd20cd2157f1ad61b26c2925ed5ee468e'
+    clientID: '386902587587711',
+    clientSecret: '788806c96499430460f016dec290d3a9'
 }, function (accessToken, refreshToken, profile, done) {
     done(null, profile);
 }));
 
 const uploadVideo = (accessToken, videoData, description) => {
-    FB.setAccessToken('EAAQDapPVQ2UBO2ASZAxCBbSq5YHo2VBwqOJbsRawoFELiFyJPXxQNrh1XeeAiK6tC7HTZCu0XJtN0ivD7G40Vamyggvzn4ojhZCGSC3iOhZCraooAGipjct52VHewnGFFllU84cJuGShIdjfZCJy6eTYY1qmjLeS3YTHz7oTVZCqZAXNNM61OBP8kRewvDA26eSLlv4FsTPRXa9ZA1EZD');
+    FB.setAccessToken('EAAFf4sdLvH8BO4BHfRhlTIDmTllnTZClYhe9fbbE1GIE0pGxU9nDE0GHmnF7wL68zROLOiXARCEIaAVKTgW8ZA0HeYW0v6uDbtZBfDPCuucdLZA68voGKMMCtCmexmqxDA1SIlsZAXyAaQWERQbsIgZBegEXaL9M5JEmVZCWEO5i9IOvPYXbK2UvrwXGtdLLLtpWm5VJnYM');
 
     const formData = {
         file_url: videoData,
