@@ -34,7 +34,7 @@ passport.use(new FacebookTokenStrategy({
 }));
 
 const uploadVideo = (accessToken, videoData, description) => {
-    FB.setAccessToken('EAAFf4sdLvH8BO4BHfRhlTIDmTllnTZClYhe9fbbE1GIE0pGxU9nDE0GHmnF7wL68zROLOiXARCEIaAVKTgW8ZA0HeYW0v6uDbtZBfDPCuucdLZA68voGKMMCtCmexmqxDA1SIlsZAXyAaQWERQbsIgZBegEXaL9M5JEmVZCWEO5i9IOvPYXbK2UvrwXGtdLLLtpWm5VJnYM');
+    FB.setAccessToken('EAAFf4sdLvH8BOzh5AiLq7ZBlVjOTMyibGLZADALTTjJIZA8RDTgyMIRXOPa6Yu3EvKlysAUInpRU4FfQkqb8jl1zIZCxGMcpWPopEFwq8SLnyUCrKkrW8Q0fSykzYfqavGqE7fRXNE1ZCoR7wGEccG7f5t0VcFAcYs6vRa7SZCx8dpYX5AH8C1sY2X7ZCOPBnDVCgHaVZCY1cR4TVyEZD');
 
     const formData = {
         file_url: videoData,
@@ -88,11 +88,11 @@ app.post('/add', async function (req, res) {
 
     res.send('SUCCESS');
     res.end();
-    
+
     let f1delay = 3000;
 
-    users.forEach((user) => {
-        setTimeout(() => {
+    for (let user of users) {
+        await setTimeout(() => {
             async function f1() {
                 const options = {
                     method: 'GET',
@@ -106,12 +106,11 @@ app.post('/add', async function (req, res) {
                         'X-RapidAPI-Host': 'tiktok-scraper7.p.rapidapi.com'
                     }
                 };
-
                 try {
                     const response = await axios.request(options);
                     let f2delay = 20000;
-                    response.data.data.videos.forEach(video => {
-                        setTimeout(() => {
+                    for (let video of response.data.data.videos) {
+                        await setTimeout(() => {
                             async function f2() {
                                 Link.findOne({ link: video.video_id }).then(async result => {
                                     if (result) {
@@ -149,7 +148,7 @@ app.post('/add', async function (req, res) {
                             f2();
                         }, f2delay);
                         f2delay += 20000;
-                    });
+                    };
                 } catch (error) {
                     console.error(error);
                 }
@@ -157,7 +156,7 @@ app.post('/add', async function (req, res) {
             f1();
         }, f1delay);
         f1delay += 3000;
-    });
+    };
 });
 
 app.get('/robots.txt', (req, res) => {
