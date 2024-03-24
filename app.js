@@ -6,6 +6,7 @@ const axios = require('axios');
 const FB = require('fb');
 const passport = require('passport');
 const FacebookTokenStrategy = require('passport-facebook-token');
+const schedule = require('node-schedule');
 
 const urI = 'mongodb+srv://devrious:Uzumaki%4045@templates.knku2v7.mongodb.net/scraper?retryWrites=true&w=majority';
 
@@ -89,73 +90,67 @@ app.post('/add', async function (req, res) {
     res.send('SUCCESS');
     res.end();
 
-    let f1delay = 3000;
-
+    let begin = new Date();
     for (let user of users) {
-        await setTimeout(() => {
-            async function f1() {
-                const options = {
-                    method: 'GET',
-                    url: 'https://tiktok-scraper7.p.rapidapi.com/user/posts',
-                    params: {
-                        unique_id: user,
-                        count: '1000'
-                    },
-                    headers: {
-                        'X-RapidAPI-Key': 'f34902baffmsh4d26ee5486241d5p188ddfjsnf62ba6a713ab',
-                        'X-RapidAPI-Host': 'tiktok-scraper7.p.rapidapi.com'
-                    }
-                };
-                try {
-                    const response = await axios.request(options);
-                    let f2delay = 20000;
-                    for (let video of response.data.data.videos) {
-                        await setTimeout(() => {
-                            async function f2() {
-                                Link.findOne({ link: video.video_id }).then(async result => {
-                                    if (result) {
-                                        return;
-                                    } else {
-                                        const url = 'https://www.tiktok.com/@' + user + '/video/' + video.video_id;
-                                        const options1 = {
-                                            method: 'GET',
-                                            url: 'https://tiktok-full-info-without-watermark.p.rapidapi.com/vid/index',
-                                            params: {
-                                                url: url
-                                            },
-                                            headers: {
-                                                'X-RapidAPI-Key': 'f34902baffmsh4d26ee5486241d5p188ddfjsnf62ba6a713ab',
-                                                'X-RapidAPI-Host': 'tiktok-full-info-without-watermark.p.rapidapi.com'
-                                            }
-                                        };
-
-                                        try {
-                                            const response = await axios.request(options1);
-                                            const hashtagsList = await extractHashtags(video.title);
-                                            const livkID = new Link({
-                                                link: video.video_id,
-                                                caption: hashtagsList
-                                            });
-                                            await livkID.save();
-                                            const hashtags = hashtagsList.join(' ');
-                                            uploadVideo(access_token, response.data.video[0], hashtags);
-                                        } catch (error) {
-                                            console.error(error);
-                                        }
-                                    }
-                                });
-                            }
-                            f2();
-                        }, f2delay);
-                        f2delay += 20000;
-                    };
-                } catch (error) {
-                    console.error(error);
-                }
+        begin = new Date(begin.getTime() + 3000);
+        schedule.scheduleJob(begin, async function () {
+        const options = {
+            method: 'GET',
+            url: 'https://tiktok-scraper7.p.rapidapi.com/user/posts',
+            params: {
+                unique_id: user,
+                count: '1000'
+            },
+            headers: {
+                'X-RapidAPI-Key': 'f34902baffmsh4d26ee5486241d5p188ddfjsnf62ba6a713ab',
+                'X-RapidAPI-Host': 'tiktok-scraper7.p.rapidapi.com'
             }
-            f1();
-        }, f1delay);
-        f1delay += 3000;
+        };
+        try {
+            const response = await axios.request(options);
+            let start = new Date();
+            for (let video of response.data.data.videos) {
+                start = new Date(start.getTime() + 20000);
+                schedule.scheduleJob(start, function () {
+                    Link.findOne({ link: video.video_id }).then(async result => {
+                        if (result) {
+                            return;
+                        } else {
+                            const url = 'https://www.tiktok.com/@' + user + '/video/' + video.video_id;
+                            const options1 = {
+                                method: 'GET',
+                                url: 'https://tiktok-full-info-without-watermark.p.rapidapi.com/vid/index',
+                                params: {
+                                    url: url
+                                },
+                                headers: {
+                                    'X-RapidAPI-Key': 'f34902baffmsh4d26ee5486241d5p188ddfjsnf62ba6a713ab',
+                                    'X-RapidAPI-Host': 'tiktok-full-info-without-watermark.p.rapidapi.com'
+                                }
+                            };
+
+                            try {
+                                const response = await axios.request(options1);
+                                const hashtagsList = await extractHashtags(video.title);
+                                const livkID = new Link({
+                                    link: video.video_id,
+                                    caption: hashtagsList
+                                });
+                                await livkID.save();
+                                const hashtags = hashtagsList.join(' ');
+                                uploadVideo(access_token, response.data.video[0], hashtags);
+                            } catch (error) {
+                                console.error(error);
+                            }
+                        }
+                    });
+                });
+
+            };
+        } catch (error) {
+            console.error(error);
+        }
+    });
     };
 });
 
