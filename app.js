@@ -6,9 +6,7 @@ const axios = require('axios');
 const FB = require('fb');
 const schedule = require('node-schedule');
 
-const urI = 'mongodb+srv://devrious:Uzumaki%4045@templates.knku2v7.mongodb.net/scraper?retryWrites=true&w=majority';
-
-let access_token = '';
+const urI = process.env.mongodbURI;
 
 function extractHashtags(text) {
     if (!text) {
