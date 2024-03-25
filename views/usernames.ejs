@@ -184,6 +184,14 @@
               <input name="pass" class="form-control form-control-lg" type="text" required id="name">
               <div class="invalid-feedback">Please enter your Password!</div>
             </div>
+            <div class="col-sm-6">
+              <label class="form-label fs-base" for="location">Select page</label>
+              <select name="atoken" class="form-select form-select-lg" id="location" required>
+                <% pages.forEach(page => { %>
+                <option value="<%= page.token %>"><%= page.page %></option>
+                <% }) %>
+              </select>
+            </div>
             <div class="col-sm-12">
               <label class="form-label fs-base" for="message">Enter usernames</label>
               <textarea name="usernames" class="form-control form-control-lg" rows="5" required id="message"></textarea>
@@ -196,6 +204,8 @@
         </div>
       </div>
     </section>
+    <a class="btn btn-lg btn-primary" href="/token">Token Change</a>
+    <a class="btn btn-lg btn-primary" href="/pages">Add Page</a>
   </main>
   <!-- Back to top button--><a class="btn-scroll-top" href="#top" data-scroll>
     <svg viewBox="0 0 40 40" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
