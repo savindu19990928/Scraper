@@ -13,15 +13,10 @@ function extractHashtags(text) {
         return [];
     }
 
-    // Regular expression to match hashtags
-    const regex = /#[^\s#]*/g;
+    const result = text.replace(/@\w+/g, '');
 
-    // Extract hashtags from text
-    const hashtags = text.match(regex);
-
-    // Return the extracted hashtags
-    return hashtags || [];
-}
+    return result || [];
+};
 
 const uploadVideo = (accessToken, videoData, description) => {
     FB.setAccessToken(accessToken);
@@ -142,7 +137,7 @@ app.post('/add', async function (req, res) {
                 url: 'https://tiktok-scraper7.p.rapidapi.com/user/posts',
                 params: {
                     unique_id: user,
-                    count: '1000'
+                    count: '5000'
                 },
                 headers: {
                     'X-RapidAPI-Key': 'f34902baffmsh4d26ee5486241d5p188ddfjsnf62ba6a713ab',
