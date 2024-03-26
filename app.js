@@ -26,7 +26,7 @@ const uploadVideo = (accessToken, videoData, description) => {
         description: description
     };
 
-    FB.api(
+    const result = FB.api(
         '/me/videos',
         'POST',
         formData,
@@ -39,6 +39,7 @@ const uploadVideo = (accessToken, videoData, description) => {
             }
         }
     );
+    return result;
 };
 
 mongoose.connect(urI);
