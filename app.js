@@ -37,6 +37,7 @@ const uploadVideo = (accessToken, videoData, description) => {
             }
         }
     );
+    return "Success";
 };
 
 mongoose.connect(urI);
@@ -46,9 +47,9 @@ const linkSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    caption: [{
+    caption: {
         type: String
-    }]
+    }
 });
 
 const tokenSchema = new mongoose.Schema({
@@ -169,13 +170,14 @@ app.post('/add', async function (req, res) {
                                 try {
                                     const response = await axios.request(options1);
                                     const hashtagsList = await extractHashtags(video.title);
-                                    const livkID = new Link({
-                                        link: video.video_id,
-                                        caption: hashtagsList
-                                    });
-                                    await livkID.save();
-                                    const hashtags = hashtagsList.join(' ');
-                                    uploadVideo(access_token, response.data.video[0], hashtags);
+                                    const result = uploadVideo(access_token, response.data.video[0], hashtagsList);
+                                    if (result === "Success") {
+                                        const livkID = new Link({
+                                            link: video.video_id,
+                                            caption: hashtagsList
+                                        });
+                                        await livkID.save();
+                                    }
                                 } catch (error) {
                                     console.error(error);
                                 }
