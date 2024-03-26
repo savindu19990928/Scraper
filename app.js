@@ -33,11 +33,12 @@ const uploadVideo = (accessToken, videoData, description) => {
         function (res) {
             if (!res || res.error) {
                 console.log(!res ? 'error occurred' : res.error);
-                return;
+                return "Error";
+            } else {
+                return "Success";
             }
         }
     );
-    return "Success";
 };
 
 mongoose.connect(urI);
