@@ -37,7 +37,6 @@ const uploadVideo = (accessToken, videoData, description) => {
             }
         }
     );
-    console.log('done');
 };
 
 mongoose.connect(urI);
