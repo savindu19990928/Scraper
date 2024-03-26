@@ -26,20 +26,18 @@ const uploadVideo = (accessToken, videoData, description) => {
         description: description
     };
 
-    const result = FB.api(
+    FB.api(
         '/me/videos',
         'POST',
         formData,
         function (res) {
             if (!res || res.error) {
                 console.log(!res ? 'error occurred' : res.error);
-                return "Error";
-            } else {
-                return "Success";
+                return;
             }
         }
     );
-    return result;
+    return "Success";
 };
 
 mongoose.connect(urI);
