@@ -148,7 +148,7 @@ app.post('/add', async function (req, res) {
                 const response = await axios.request(options);
                 let start = new Date();
                 for (let video of response.data.data.videos) {
-                    start = new Date(start.getTime() + 60000);
+                    start = new Date(start.getTime() + 90000);
                     schedule.scheduleJob(start, function () {
                         Link.findOne({ link: video.video_id }).then(async result => {
                             if (result) {
