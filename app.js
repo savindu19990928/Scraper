@@ -61,7 +61,6 @@ async function vList(user1) {
         response.data.data.videos.forEach(video => {
             setTimeout(() => {
                 videoListf.push(video)
-                console.log(video.video_id);
             }, 10000);
         });
         if (response.data.data.hasMore === true) {
