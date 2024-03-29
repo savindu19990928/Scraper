@@ -40,6 +40,39 @@ const uploadVideo = (accessToken, videoData, description) => {
     return "Success";
 };
 
+async function vList(user1) {
+    let videoListf = [];
+    let cursor = '0';
+    while (cursor !== "noMore") {
+        let options = {
+            method: 'GET',
+            url: 'https://tiktok-video-feature-summary.p.rapidapi.com/user/posts',
+            params: {
+                unique_id: user1,
+                count: '33',
+                cursor: cursor
+            },
+            headers: {
+                'X-RapidAPI-Key': 'f34902baffmsh4d26ee5486241d5p188ddfjsnf62ba6a713ab',
+                'X-RapidAPI-Host': 'tiktok-video-feature-summary.p.rapidapi.com'
+            }
+        };
+        const response = await axios.request(options);
+        response.data.data.videos.forEach(video => {
+            setTimeout(() => {
+                videoListf.push(video)
+                console.log(video.video_id);
+            }, 10000);
+        });
+        if (response.data.data.hasMore === true) {
+            cursor = response.data.data.cursor;
+        } else {
+            cursor = "noMore";
+        }
+    }
+    return videoListf;
+};
+
 mongoose.connect(urI);
 
 const linkSchema = new mongoose.Schema({
@@ -132,22 +165,11 @@ app.post('/add', async function (req, res) {
     for (let user of users) {
         begin = new Date(begin.getTime() + 3000);
         schedule.scheduleJob(begin, async function () {
-            const options = {
-                method: 'GET',
-                url: 'https://tiktok-scraper7.p.rapidapi.com/user/posts',
-                params: {
-                    unique_id: user,
-                    count: '5000'
-                },
-                headers: {
-                    'X-RapidAPI-Key': 'f34902baffmsh4d26ee5486241d5p188ddfjsnf62ba6a713ab',
-                    'X-RapidAPI-Host': 'tiktok-scraper7.p.rapidapi.com'
-                }
-            };
+            let videoList = await vList(user);
+            console.log(videoList);
             try {
-                const response = await axios.request(options);
                 let start = new Date();
-                for (let video of response.data.data.videos) {
+                for (let video of videoList) {
                     start = new Date(start.getTime() + 120000);
                     schedule.scheduleJob(start, function () {
                         Link.findOne({ link: video.video_id }).then(async result => {
