@@ -216,6 +216,7 @@ app.post('/add', async function (req, res) {
             });
         });
     };
+    return console.log("Done!");
 });
 
 app.get('/robots.txt', (req, res) => {
