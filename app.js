@@ -46,7 +46,7 @@ async function vList(user1) {
     while (cursor !== "noMore") {
         let options = {
             method: 'GET',
-            url: 'https://tiktok-video-feature-summary.p.rapidapi.com/user/posts',
+            url: 'https://tiktok-scraper7.p.rapidapi.com/user/posts',
             params: {
                 unique_id: user1,
                 count: '33',
@@ -54,7 +54,7 @@ async function vList(user1) {
             },
             headers: {
                 'X-RapidAPI-Key': 'f34902baffmsh4d26ee5486241d5p188ddfjsnf62ba6a713ab',
-                'X-RapidAPI-Host': 'tiktok-video-feature-summary.p.rapidapi.com'
+                'X-RapidAPI-Host': 'tiktok-scraper7.p.rapidapi.com'
             }
         };
         const response = await axios.request(options);
