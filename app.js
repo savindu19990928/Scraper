@@ -49,7 +49,7 @@ async function vList(user1) {
             url: 'https://tiktok-scraper7.p.rapidapi.com/user/posts',
             params: {
                 unique_id: user1,
-                count: '33',
+                count: '30',
                 cursor: cursor
             },
             headers: {
@@ -59,16 +59,15 @@ async function vList(user1) {
         };
         const response = await axios.request(options);
         response.data.data.videos.forEach(video => {
-            setTimeout(() => {
-                videoListf.push(video)
-            }, 10000);
+            videoListf.push(video)
+            console.log(video.video_id);
         });
         if (response.data.data.hasMore === true) {
             cursor = response.data.data.cursor;
         } else {
             cursor = "noMore";
         }
-    }
+    };
     return videoListf;
 };
 
@@ -94,7 +93,8 @@ const tokenSchema = new mongoose.Schema({
         required: true
     },
     token: [{
-        type: String
+        type: String,
+        required: true
     }]
 });
 
@@ -156,9 +156,9 @@ app.post('/add', async function (req, res) {
     if (req.body.pass != "dev@tik@scraper@45") {
         return res.send('Wrong Password!');
     }
-    let reqCount = 0;
-    const aToken = await Token.findOne({page: pageName});
-    let access_token = aToken.token[Math.floor(reqCount/100)];
+    let reqCount = 1;
+    const aToken = await Token.findOne({ page: pageName });
+    let access_token = aToken.token[Math.floor(reqCount / 100)];
     const users = usernamesS.split(" ");
 
     res.send('SUCCESS');
@@ -168,52 +168,53 @@ app.post('/add', async function (req, res) {
     for (let user of users) {
         begin = new Date(begin.getTime() + 3000);
         schedule.scheduleJob(begin, async function () {
-            let videoList = await vList(user);
-            try {
-                let start = new Date();
-                for (let video of videoList) {
-                    start = new Date(start.getTime() + 120000);
-                    schedule.scheduleJob(start, function () {
-                        Link.findOne({ link: video.video_id }).then(async result => {
-                            if (result) {
-                                return;
-                            } else {
-                                const url = 'https://www.tiktok.com/@' + user + '/video/' + video.video_id;
-                                const options1 = {
-                                    method: 'GET',
-                                    url: 'https://tiktok-full-info-without-watermark.p.rapidapi.com/vid/index',
-                                    params: {
-                                        url: url
-                                    },
-                                    headers: {
-                                        'X-RapidAPI-Key': 'f34902baffmsh4d26ee5486241d5p188ddfjsnf62ba6a713ab',
-                                        'X-RapidAPI-Host': 'tiktok-full-info-without-watermark.p.rapidapi.com'
-                                    }
-                                };
+            await vList(user).then((videoList) => {
+                try {
+                    let start = new Date();
+                    for (let video of videoList) {
+                        start = new Date(start.getTime() + 120000);
+                        schedule.scheduleJob(start, function () {
+                            Link.findOne({ link: video.video_id }).then(async result => {
+                                if (result) {
+                                    return;
+                                } else {
+                                    const url = 'https://www.tiktok.com/@' + user + '/video/' + video.video_id;
+                                    const options1 = {
+                                        method: 'GET',
+                                        url: 'https://tiktok-full-info-without-watermark.p.rapidapi.com/vid/index',
+                                        params: {
+                                            url: url
+                                        },
+                                        headers: {
+                                            'X-RapidAPI-Key': 'f34902baffmsh4d26ee5486241d5p188ddfjsnf62ba6a713ab',
+                                            'X-RapidAPI-Host': 'tiktok-full-info-without-watermark.p.rapidapi.com'
+                                        }
+                                    };
 
-                                try {
-                                    const response = await axios.request(options1);
-                                    const hashtagsList = await extractHashtags(video.title);
-                                    const result = uploadVideo(access_token, response.data.video[0], hashtagsList);
-                                    if (result === "Success") {
-                                        ++reqCount;
-                                        const livkID = new Link({
-                                            link: video.video_id,
-                                            caption: hashtagsList
-                                        });
-                                        await livkID.save();
+                                    try {
+                                        const response = await axios.request(options1);
+                                        const hashtagsList = await extractHashtags(video.title);
+                                        const result = uploadVideo(access_token, response.data.video[0], hashtagsList);
+                                        if (result === "Success") {
+                                            ++reqCount;
+                                            const livkID = new Link({
+                                                link: video.video_id,
+                                                caption: hashtagsList
+                                            });
+                                            await livkID.save();
+                                        }
+                                    } catch (error) {
+                                        console.error(error);
                                     }
-                                } catch (error) {
-                                    console.error(error);
                                 }
-                            }
+                            });
                         });
-                    });
 
-                };
-            } catch (error) {
-                console.error(error);
-            }
+                    };
+                } catch (error) {
+                    console.error(error);
+                }
+            });
         });
     };
 });
