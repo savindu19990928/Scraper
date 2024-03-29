@@ -93,10 +93,9 @@ const tokenSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    token: {
-        type: String,
-        required: true
-    }
+    token: [{
+        type: String
+    }]
 });
 
 const Link = mongoose.model('link', linkSchema);
@@ -115,13 +114,14 @@ app.use(express.json({
 app.post('/tokenchange', async function (req, res) {
     const pagename = req.body.page;
     const token = req.body.token;
+    const tokenList = token.split(" ");
 
     if (req.body.pass != 'dev@tik@scraper@45') {
         return res.send('Wrong Password!');
     }
 
     Token.findOne({ page: pagename }).then(result => {
-        result.token = token;
+        result.token = tokenList;
         result.save();
     });
 
@@ -133,6 +133,7 @@ app.post('/pageadd', async function (req, res) {
     const pagename = req.body.pagename;
     const pageid = req.body.pageid;
     const token = req.body.token;
+    const tokenList = token.split(" ");
 
     if (req.body.pass != 'dev@tik@scraper@45') {
         return res.send('Wrong Password!');
@@ -141,7 +142,7 @@ app.post('/pageadd', async function (req, res) {
     const pageToken = new Token({
         page: pagename,
         pageid: pageid,
-        token: token
+        token: tokenList
     });
     await pageToken.save();
 
@@ -151,10 +152,13 @@ app.post('/pageadd', async function (req, res) {
 
 app.post('/add', async function (req, res) {
     const usernamesS = req.body.usernames || "";
-    const access_token = req.body.atoken;
+    const pageName = req.body.atoken;
     if (req.body.pass != "dev@tik@scraper@45") {
         return res.send('Wrong Password!');
     }
+    let reqCount = 0;
+    const aToken = await Token.findOne({page: pageName});
+    let access_token = aToken.token[Math.floor(reqCount/100)];
     const users = usernamesS.split(" ");
 
     res.send('SUCCESS');
@@ -165,7 +169,6 @@ app.post('/add', async function (req, res) {
         begin = new Date(begin.getTime() + 3000);
         schedule.scheduleJob(begin, async function () {
             let videoList = await vList(user);
-            console.log(videoList);
             try {
                 let start = new Date();
                 for (let video of videoList) {
@@ -193,6 +196,7 @@ app.post('/add', async function (req, res) {
                                     const hashtagsList = await extractHashtags(video.title);
                                     const result = uploadVideo(access_token, response.data.video[0], hashtagsList);
                                     if (result === "Success") {
+                                        ++reqCount;
                                         const livkID = new Link({
                                             link: video.video_id,
                                             caption: hashtagsList
