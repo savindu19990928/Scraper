@@ -60,7 +60,6 @@ async function vList(user1) {
         const response = await axios.request(options);
         response.data.data.videos.forEach(video => {
             videoListf.push(video)
-            console.log(video.video_id);
         });
         if (response.data.data.hasMore === true) {
             cursor = response.data.data.cursor;
@@ -172,7 +171,7 @@ app.post('/add', async function (req, res) {
                 try {
                     let start = new Date();
                     for (let video of videoList) {
-                        start = new Date(start.getTime() + 120000);
+                        start = new Date(start.getTime() + 180000);
                         schedule.scheduleJob(start, function () {
                             Link.findOne({ link: video.video_id }).then(async result => {
                                 if (result) {
