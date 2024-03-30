@@ -18,6 +18,22 @@ function extractHashtags(text) {
     return result || [];
 };
 
+function runPauseTask() {
+    return new Promise((resolve, reject) => {
+        let count = 0;
+
+        const scheduledTask = schedule.scheduleJob('* * * * *', function() {
+            console.log('Wait 1 hour');
+            count++;
+
+            if (count === 60) {
+                scheduledTask.cancel();
+                resolve();
+            }
+        });
+    });
+}
+
 const uploadVideo = (accessToken, videoData, description) => {
     FB.setAccessToken(accessToken);
 
@@ -169,10 +185,16 @@ app.post('/add', async function (req, res) {
         schedule.scheduleJob(begin, async function () {
             await vList(user).then((videoList) => {
                 try {
+                    let vcount = 0;
                     let start = new Date();
                     for (let video of videoList) {
-                        start = new Date(start.getTime() + 180000);
-                        schedule.scheduleJob(start, function () {
+                        start = new Date(start.getTime() + 60000);
+                        schedule.scheduleJob(start, async function () {
+                            ++vcount;
+                            if (vcount === 60) {
+                                vcount = 0;
+                                await runPauseTask();  
+                            };
                             Link.findOne({ link: video.video_id }).then(async result => {
                                 if (result) {
                                     return;
