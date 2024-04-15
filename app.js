@@ -18,7 +18,7 @@ function extractHashtags(text) {
     return result || [];
 };
 
-const uploadVideo = (accessToken, videoData, description) => {
+const uploadVideo = async (accessToken, videoData, description) => {
     FB.setAccessToken(accessToken);
 
     const formData = {
@@ -28,7 +28,7 @@ const uploadVideo = (accessToken, videoData, description) => {
 
     let respond1 = "";
 
-    FB.api(
+    await FB.api(
         '/me/videos',
         'POST',
         formData,
@@ -188,7 +188,7 @@ app.post('/add', async function (req, res) {
                                 } else {
                                     try {
                                         const hashtagsList = await extractHashtags(video.title);
-                                        const result = uploadVideo(access_token, video.play, hashtagsList);
+                                        const result = await uploadVideo(access_token, video.play, hashtagsList);
                                         if (result === "Success") {
                                             const livkID = new Link({
                                                 link: video.video_id,
