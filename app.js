@@ -18,7 +18,7 @@ function extractHashtags(text) {
     return result || [];
 };
 
-const uploadVideo = async (accessToken, videoData, description) => {
+const uploadVideo = (accessToken, videoData, description, pageID) => {
     FB.setAccessToken(accessToken);
 
     const formData = {
@@ -26,22 +26,24 @@ const uploadVideo = async (accessToken, videoData, description) => {
         description: description
     };
 
-    let respond1 = "";
-
-    await FB.api(
+    FB.api(
         '/me/videos',
         'POST',
         formData,
         function (res) {
             if (!res || res.error) {
                 console.log(!res ? 'error occurred' : res.error);
-                respond1 = "Error";
+                return;
             } else {
-                respond1 = "Success";
+                const livkID = new Link({
+                    link: video.video_id,
+                    caption: hashtagsList,
+                    page_id: pageID
+                });
+                livkID.save();
             }
         }
     );
-    return respond1;
 };
 
 async function vList(user1) {
@@ -188,15 +190,7 @@ app.post('/add', async function (req, res) {
                                 } else {
                                     try {
                                         const hashtagsList = await extractHashtags(video.title);
-                                        const result = await uploadVideo(access_token, video.play, hashtagsList);
-                                        if (result === "Success") {
-                                            const livkID = new Link({
-                                                link: video.video_id,
-                                                caption: hashtagsList,
-                                                page_id: aToken.pageid
-                                            });
-                                            await livkID.save();
-                                        }
+                                        uploadVideo(access_token, video.play, hashtagsList, aToken.pageid);
                                     } catch (error) {
                                         console.error(error);
                                     }
