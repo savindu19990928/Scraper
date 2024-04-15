@@ -275,9 +275,9 @@ app.get('/pages', function (req, res) {
     res.render('pages');
 });
 
-app.get('/', async function (req, res) {
-    await Token.find().then((result1) => {
-        result1.forEach(page => {
+app.get('/', function (req, res) {
+    Token.find().then(result => {
+        result.forEach(page => {
             const currentDate = new Date();
             const givenDate = page.tdate;
             const timeDifference = currentDate.getTime() - givenDate.getTime();
@@ -289,9 +289,9 @@ app.get('/', async function (req, res) {
                 });
             }
         });
+        const pageArray = result.map(pageResult => { return pageResult });
+        return res.render('usernames', { pages: pageArray });
     });
-    const pageArray = result.map(pageResult => { return pageResult });
-    return res.render('usernames', { pages: pageArray });
 });
 
 app.listen(process.env.PORT || 3000);
