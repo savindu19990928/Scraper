@@ -188,6 +188,7 @@ app.post('/add', async function (req, res) {
                                         const hashtagsList = await extractHashtags(video.title);
                                         const result = uploadVideo(access_token, video.play, hashtagsList);
                                         if (result === "Success") {
+                                            console.log("success");
                                             const livkID = new Link({
                                                 link: video.video_id,
                                                 caption: hashtagsList,
