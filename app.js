@@ -178,7 +178,7 @@ app.post('/add', async function (req, res) {
                     let start = new Date();
                     for (let video of videoList) {
                         const time1 = Math.floor(Math.random() * (300000 - 240000 + 1)) + 240000;
-                        start = new Date(start.getTime() + time1);
+                        start = new Date(start.getTime() + 1000);
                         schedule.scheduleJob(start, async function () {
                             Link.findOne({ link: video.video_id, page_id: aToken.pageid }).then(async result => {
                                 if (result) {
