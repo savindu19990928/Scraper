@@ -2,11 +2,22 @@ const express = require('express');
 const app = express();
 const path = require('path');
 const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
 const axios = require('axios');
 const FB = require('fb');
 const schedule = require('node-schedule');
 
 const urI = process.env.mongodbURI;
+
+const transporter = nodemailer.createTransport({
+    host: "smtp-relay.brevo.com",
+    port: 465,
+    secure: true,
+    auth: {
+        user: "devriousteam@gmail.com",
+        pass: "xsmtpsib-59d53fdf227388f930c459c42860c2db0473309c91d978c2a4ac189f2f48db0b-hmgY8wO5IQ3H7ABR",
+    },
+});
 
 function extractHashtags(text) {
     if (!text) {
@@ -160,6 +171,19 @@ app.post('/pageadd', async function (req, res) {
     res.end();
 });
 
+app.post('/deletepage', async function (req, res) {
+    const pagename = req.body.page;
+
+    if (req.body.pass != 'dev@tik@scraper@45') {
+        return res.send('Wrong Password!');
+    }
+
+    await Token.findByIdAndDelete(pagename);
+
+    res.send('SUCCESS');
+    res.end();
+});
+
 app.post('/add', async function (req, res) {
     const usernamesS = req.body.usernames || "";
     const pageName = req.body.atoken;
@@ -179,6 +203,7 @@ app.post('/add', async function (req, res) {
         schedule.scheduleJob(begin, async function () {
             await vList(user).then((videoList) => {
                 try {
+                    let ind = 0;
                     let start = new Date();
                     for (let video of videoList) {
                         const time1 = Math.floor(Math.random() * (300000 - 240000 + 1)) + 240000;
@@ -191,6 +216,23 @@ app.post('/add', async function (req, res) {
                                     try {
                                         const hashtagsList = await extractHashtags(video.title);
                                         await uploadVideo(access_token, video.play, hashtagsList, aToken.pageid, video.video_id);
+                                        ++ind;
+                                        if (ind === (videoList.length - 1)) {
+                                            const mailOptions = {
+                                                from: {
+                                                    name: "Notification",
+                                                    address: "info@devriousteam.lk"
+                                                },
+                                                to: 'richmindsomc@gmail.com',
+                                                subject: 'Uploading is done!',
+                                                text: `Uploading to ${aToken.page} is done and ${videoList.length} videos uploaded.`
+                                            };
+                                            transporter.sendMail(mailOptions, function (err) {
+                                                if (err) {
+                                                    console.log(err);
+                                                };
+                                            });
+                                        }
                                     } catch (error) {
                                         console.error(error);
                                     }
@@ -215,6 +257,13 @@ app.get('/token', function (req, res) {
     Token.find().then((result) => {
         const pageArray = result.map(pageResult => { return pageResult.page });
         res.render('token', { pages: pageArray });
+    });
+});
+
+app.get('/pagedelete', function (req, res) {
+    Token.find().then((result) => {
+        const pageArray = result.map(pageResult => { return pageResult });
+        res.render('delete', { pages: pageArray });
     });
 });
 
