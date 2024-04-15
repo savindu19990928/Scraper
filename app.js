@@ -6,7 +6,6 @@ const nodemailer = require('nodemailer');
 const axios = require('axios');
 const FB = require('fb');
 const schedule = require('node-schedule');
-const { type } = require('os');
 
 const urI = process.env.mongodbURI;
 
@@ -123,6 +122,10 @@ const tokenSchema = new mongoose.Schema({
     token: {
         type: String,
         required: true
+    },
+    tdate: {
+        type: Date,
+        required: true
     }
 });
 
@@ -149,6 +152,7 @@ app.post('/tokenchange', async function (req, res) {
 
     Token.findOne({ page: pagename }).then(result => {
         result.token = token;
+        result.tdate = new Date();
         result.save();
     });
 
@@ -168,7 +172,8 @@ app.post('/pageadd', async function (req, res) {
     const pageToken = new Token({
         page: pagename,
         pageid: pageid,
-        token: token
+        token: token,
+        tdate: new Date()
     });
     await pageToken.save();
 
@@ -224,7 +229,7 @@ app.post('/add', async function (req, res) {
                                             name: "Notification",
                                             address: "info@devriousteam.lk"
                                         },
-                                        to: 'richmindsomc@gmail.com',
+                                        to: process.env.mail,
                                         subject: 'Uploading is done!',
                                         text: `Uploading to ${aToken.page} is done and ${videoList.length} videos uploaded.`
                                     };
@@ -270,11 +275,23 @@ app.get('/pages', function (req, res) {
     res.render('pages');
 });
 
-app.get('/', function (req, res) {
-    Token.find().then((result) => {
-        const pageArray = result.map(pageResult => { return pageResult });
-        res.render('usernames', { pages: pageArray });
+app.get('/', async function (req, res) {
+    await Token.find().then((result1) => {
+        result1.forEach(page => {
+            const currentDate = new Date();
+            const givenDate = page.tdate;
+            const timeDifference = currentDate.getTime() - givenDate.getTime();
+            const differenceInDays = timeDifference / (1000 * 3600 * 24);
+            if (differenceInDays > 29) {
+                Token.findById(page.id).then(pres => {
+                    pres.page = pres.page + " (Expired!)";
+                    pres.save();
+                });
+            }
+        });
     });
+    const pageArray = result.map(pageResult => { return pageResult });
+    return res.render('usernames', { pages: pageArray });
 });
 
 app.listen(process.env.PORT || 3000);
