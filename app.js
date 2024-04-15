@@ -18,7 +18,7 @@ function extractHashtags(text) {
     return result || [];
 };
 
-const uploadVideo = (accessToken, videoData, description) => {
+const uploadVideo = async (accessToken, videoData, description) => {
     FB.setAccessToken(accessToken);
 
     const formData = {
@@ -26,18 +26,20 @@ const uploadVideo = (accessToken, videoData, description) => {
         description: description
     };
 
-    FB.api(
+    const respond1 = await FB.api(
         '/me/videos',
         'POST',
         formData,
         function (res) {
             if (!res || res.error) {
                 console.log(!res ? 'error occurred' : res.error);
-                return;
+                return "Error";
+            } else {
+                return "Success";
             }
         }
     );
-    return "Success";
+    return respond1;
 };
 
 async function vList(user1) {
