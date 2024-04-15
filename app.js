@@ -18,7 +18,7 @@ function extractHashtags(text) {
     return result || [];
 };
 
-const uploadVideo = async (accessToken, videoData, description) => {
+const uploadVideo = (accessToken, videoData, description) => {
     FB.setAccessToken(accessToken);
 
     const formData = {
@@ -28,7 +28,7 @@ const uploadVideo = async (accessToken, videoData, description) => {
 
     let respond1 = "";
 
-    await FB.api(
+    FB.api(
         '/me/videos',
         'POST',
         formData,
