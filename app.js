@@ -26,16 +26,18 @@ const uploadVideo = async (accessToken, videoData, description) => {
         description: description
     };
 
-    const respond1 = await FB.api(
+    let respond1 = "";
+
+    await FB.api(
         '/me/videos',
         'POST',
         formData,
         function (res) {
             if (!res || res.error) {
                 console.log(!res ? 'error occurred' : res.error);
-                return "Error";
+                respond1 = "Error";
             } else {
-                return "Success";
+                respond1 = "Success";
             }
         }
     );
@@ -188,7 +190,6 @@ app.post('/add', async function (req, res) {
                                         const hashtagsList = await extractHashtags(video.title);
                                         const result = uploadVideo(access_token, video.play, hashtagsList);
                                         if (result === "Success") {
-                                            console.log("success");
                                             const livkID = new Link({
                                                 link: video.video_id,
                                                 caption: hashtagsList,
