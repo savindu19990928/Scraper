@@ -18,7 +18,7 @@ function extractHashtags(text) {
     return result || [];
 };
 
-const uploadVideo = (accessToken, videoData, description, pageID) => {
+const uploadVideo = async (accessToken, videoData, description, pageID, videoID) => {
     FB.setAccessToken(accessToken);
 
     const formData = {
@@ -36,8 +36,8 @@ const uploadVideo = (accessToken, videoData, description, pageID) => {
                 return;
             } else {
                 const livkID = new Link({
-                    link: video.video_id,
-                    caption: hashtagsList,
+                    link: videoID,
+                    caption: description,
                     page_id: pageID
                 });
                 livkID.save();
@@ -190,7 +190,7 @@ app.post('/add', async function (req, res) {
                                 } else {
                                     try {
                                         const hashtagsList = await extractHashtags(video.title);
-                                        uploadVideo(access_token, video.play, hashtagsList, aToken.pageid);
+                                        await uploadVideo(access_token, video.play, hashtagsList, aToken.pageid, video.video_id);
                                     } catch (error) {
                                         console.error(error);
                                     }
