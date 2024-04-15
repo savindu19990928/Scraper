@@ -6,6 +6,7 @@ const nodemailer = require('nodemailer');
 const axios = require('axios');
 const FB = require('fb');
 const schedule = require('node-schedule');
+const { type } = require('os');
 
 const urI = process.env.mongodbURI;
 
@@ -57,7 +58,7 @@ const uploadVideo = async (accessToken, videoData, description, pageID, videoID)
     );
 };
 
-async function vList(user1) {
+async function vList(user1, pid) {
     let videoListf = [];
     let cursor = '0';
     while (cursor !== "noMore") {
@@ -78,7 +79,11 @@ async function vList(user1) {
 
         if (response.data.data.videos) {
             response.data.data.videos.forEach(video => {
-                videoListf.push(video);
+                Link.findOne({ link: video.video_id, page_id: pid }).then(result => {
+                    if (!result) {
+                        videoListf.push(video);
+                    }
+                });
             });
         }
         if (response.data.data.hasMore === true) {
@@ -201,7 +206,7 @@ app.post('/add', async function (req, res) {
     for (let user of users) {
         begin = new Date(begin.getTime() + 3000);
         schedule.scheduleJob(begin, async function () {
-            await vList(user).then((videoList) => {
+            await vList(user, aToken.pageid).then((videoList) => {
                 try {
                     let ind = 0;
                     let start = new Date();
@@ -209,35 +214,29 @@ app.post('/add', async function (req, res) {
                         const time1 = Math.floor(Math.random() * (300000 - 240000 + 1)) + 240000;
                         start = new Date(start.getTime() + time1);
                         schedule.scheduleJob(start, async function () {
-                            Link.findOne({ link: video.video_id, page_id: aToken.pageid }).then(async result => {
-                                if (result) {
-                                    return;
-                                } else {
-                                    try {
-                                        const hashtagsList = await extractHashtags(video.title);
-                                        await uploadVideo(access_token, video.play, hashtagsList, aToken.pageid, video.video_id);
-                                        ++ind;
-                                        if (ind === (videoList.length - 1)) {
-                                            const mailOptions = {
-                                                from: {
-                                                    name: "Notification",
-                                                    address: "info@devriousteam.lk"
-                                                },
-                                                to: 'richmindsomc@gmail.com',
-                                                subject: 'Uploading is done!',
-                                                text: `Uploading to ${aToken.page} is done and ${videoList.length} videos uploaded.`
-                                            };
-                                            transporter.sendMail(mailOptions, function (err) {
-                                                if (err) {
-                                                    console.log(err);
-                                                };
-                                            });
-                                        }
-                                    } catch (error) {
-                                        console.error(error);
-                                    }
+                            try {
+                                const hashtagsList = await extractHashtags(video.title);
+                                await uploadVideo(access_token, video.play, hashtagsList, aToken.pageid, video.video_id);
+                                ++ind;
+                                if (ind === (videoList.length - 1)) {
+                                    const mailOptions = {
+                                        from: {
+                                            name: "Notification",
+                                            address: "info@devriousteam.lk"
+                                        },
+                                        to: 'richmindsomc@gmail.com',
+                                        subject: 'Uploading is done!',
+                                        text: `Uploading to ${aToken.page} is done and ${videoList.length} videos uploaded.`
+                                    };
+                                    transporter.sendMail(mailOptions, function (err) {
+                                        if (err) {
+                                            console.log(err);
+                                        };
+                                    });
                                 }
-                            });
+                            } catch (error) {
+                                console.error(error);
+                            }
                         });
                     };
                 } catch (error) {
