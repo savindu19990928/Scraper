@@ -227,7 +227,7 @@ app.post('/add', async function (req, res) {
                                     const mailOptions = {
                                         from: {
                                             name: "Notification",
-                                            address: "info@devriousteam.lk"
+                                            address: "devriousteam@gmail.com"
                                         },
                                         to: process.env.mail,
                                         subject: 'Uploading is done!',
