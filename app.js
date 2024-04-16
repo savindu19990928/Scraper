@@ -223,7 +223,7 @@ app.post('/add', async function (req, res) {
                     ind1 = 0;
                     return false;
                 }
-                const time1 = Math.floor(Math.random() * (360000 - 300000 + 1)) + 300000;
+                const time1 = Math.floor(Math.random() * (480000 - 432000 + 1)) + 432000;
                 start = new Date(start.getTime() + time1);
                 schedule.scheduleJob(start, async function () {
                     try {
