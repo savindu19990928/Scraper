@@ -204,26 +204,26 @@ app.post('/add', async function (req, res) {
     let access_token = aToken.token;
     const users = usernamesS.split(" ");
 
-    const vl = await vList("dominatingmotivation2", aToken.pageid);
-
-    res.send(vl);
+    res.send('SUCCESS');
     res.end();
 
     let begin = new Date();
     for (let user of users) {
         begin = new Date(begin.getTime() + 3000);
         schedule.scheduleJob(begin, async function () {
-            await vList(user, aToken.pageid).then((videoList) => {
-                try {
-                    let ind = 0;
-                    // let ind1 = 0;
-                    let start = new Date();
+            let videoList = await vList(user, aToken.pageid);
+            try {
+                let ind = 0;
+                let ind1 = 0;
+                let start = new Date();
+                while (ind < videoList.length) {
+                    videoList = await vList(user, aToken.pageid);
                     for (let video of videoList) {
-                        // ++ind1;
-                        // if (ind1 === 50) {
-                        //     ind1 = 0;
-                        //     return false;
-                        // }
+                        ++ind1;
+                        if (ind1 === 50) {
+                            ind1 = 0;
+                            return false;
+                        }
                         const time1 = Math.floor(Math.random() * (300000 - 240000 + 1)) + 240000;
                         start = new Date(start.getTime() + time1);
                         schedule.scheduleJob(start, async function () {
@@ -253,10 +253,10 @@ app.post('/add', async function (req, res) {
                             }
                         });
                     };
-                } catch (error) {
-                    console.error(error);
-                }
-            });
+                };
+            } catch (error) {
+                console.error(error);
+            }
         });
     };
 });
