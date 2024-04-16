@@ -231,7 +231,7 @@ app.post('/add', async function (req, res) {
                         const hashtagsList = await extractHashtags(video.title);
                         await uploadVideo(access_token, video.play, hashtagsList, aToken.pageid, video.video_id);
                         ++ind;
-                        if (ind === (videoList.length - 1)) {
+                        if (ind === videoList.length) {
                             const mailOptions = {
                                 from: {
                                     name: "Notification",
