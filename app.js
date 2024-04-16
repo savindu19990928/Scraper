@@ -57,40 +57,42 @@ const uploadVideo = async (accessToken, videoData, description, pageID, videoID)
     );
 };
 
-async function vList(user1, pid) {
+async function vList(users, pid) {
     let videoListf = [];
     let cursor = '0';
-    while (cursor !== "noMore") {
-        let options = {
-            method: 'GET',
-            url: 'https://tiktok-video-feature-summary.p.rapidapi.com/user/posts',
-            params: {
-                unique_id: user1,
-                count: '30',
-                cursor: cursor
-            },
-            headers: {
-                'X-RapidAPI-Key': 'f34902baffmsh4d26ee5486241d5p188ddfjsnf62ba6a713ab',
-                'X-RapidAPI-Host': 'tiktok-video-feature-summary.p.rapidapi.com'
+    users.forEach(async user1 => {
+        while (cursor !== "noMore") {
+            let options = {
+                method: 'GET',
+                url: 'https://tiktok-video-feature-summary.p.rapidapi.com/user/posts',
+                params: {
+                    unique_id: user1,
+                    count: '30',
+                    cursor: cursor
+                },
+                headers: {
+                    'X-RapidAPI-Key': 'f34902baffmsh4d26ee5486241d5p188ddfjsnf62ba6a713ab',
+                    'X-RapidAPI-Host': 'tiktok-video-feature-summary.p.rapidapi.com'
+                }
+            };
+            const response = await axios.request(options);
+
+            if (response.data.data.videos) {
+                response.data.data.videos.forEach(video => {
+                    Link.findOne({ link: video.video_id, page_id: pid }).then(result => {
+                        if (!result) {
+                            videoListf.push(video);
+                        }
+                    });
+                });
+            }
+            if (response.data.data.hasMore === true) {
+                cursor = response.data.data.cursor;
+            } else {
+                cursor = "noMore";
             }
         };
-        const response = await axios.request(options);
-
-        if (response.data.data.videos) {
-            response.data.data.videos.forEach(video => {
-                Link.findOne({ link: video.video_id, page_id: pid }).then(result => {
-                    if (!result) {
-                        videoListf.push(video);
-                    }
-                });
-            });
-        }
-        if (response.data.data.hasMore === true) {
-            cursor = response.data.data.cursor;
-        } else {
-            cursor = "noMore";
-        }
-    };
+    });
     return videoListf;
 };
 
@@ -207,58 +209,52 @@ app.post('/add', async function (req, res) {
     res.send('SUCCESS');
     res.end();
 
-    let begin = new Date();
-    for (let user of users) {
-        begin = new Date(begin.getTime() + 3000);
-        schedule.scheduleJob(begin, async function () {
-            let videoList = await vList(user, aToken.pageid);
-            try {
-                let ind = 0;
-                let ind1 = 0;
-                let start = new Date();
-                while (ind < videoList.length) {
-                    videoList = await vList(user, aToken.pageid);
-                    for (let video of videoList) {
-                        ++ind1;
-                        if (ind1 === 50) {
-                            ind1 = 0;
-                            return false;
-                        }
-                        const time1 = Math.floor(Math.random() * (300000 - 240000 + 1)) + 240000;
-                        start = new Date(start.getTime() + time1);
-                        schedule.scheduleJob(start, async function () {
-                            try {
+    let videoList = await vList(users, aToken.pageid);
+    try {
+        let ind = 0;
+        let ind1 = 0;
+        let start = new Date();
+        while (ind < videoList.length) {
+            videoList = await vList(users, aToken.pageid);
+            for (let video of videoList) {
+                ++ind1;
+                if (ind1 === 50) {
+                    ind1 = 0;
+                    return false;
+                }
+                const time1 = Math.floor(Math.random() * (300000 - 240000 + 1)) + 240000;
+                start = new Date(start.getTime() + time1);
+                schedule.scheduleJob(start, async function () {
+                    try {
 
-                                const hashtagsList = await extractHashtags(video.title);
-                                await uploadVideo(access_token, video.play, hashtagsList, aToken.pageid, video.video_id);
-                                ++ind;
-                                if (ind === (videoList.length - 1)) {
-                                    const mailOptions = {
-                                        from: {
-                                            name: "Notification",
-                                            address: "devriousteam@gmail.com"
-                                        },
-                                        to: process.env.mail,
-                                        subject: 'Uploading is done!',
-                                        text: `Uploading to ${aToken.page} is done and ${videoList.length} videos uploaded.`
-                                    };
-                                    transporter.sendMail(mailOptions, function (err) {
-                                        if (err) {
-                                            console.log(err);
-                                        };
-                                    });
-                                }
-                            } catch (error) {
-                                console.error(error);
-                            }
-                        });
-                    };
-                };
-            } catch (error) {
-                console.error(error);
-            }
-        });
-    };
+                        const hashtagsList = await extractHashtags(video.title);
+                        await uploadVideo(access_token, video.play, hashtagsList, aToken.pageid, video.video_id);
+                        ++ind;
+                        if (ind === (videoList.length - 1)) {
+                            const mailOptions = {
+                                from: {
+                                    name: "Notification",
+                                    address: "devriousteam@gmail.com"
+                                },
+                                to: process.env.mail,
+                                subject: 'Uploading is done!',
+                                text: `Uploading to ${aToken.page} is done and ${videoList.length} videos uploaded.`
+                            };
+                            transporter.sendMail(mailOptions, function (err) {
+                                if (err) {
+                                    console.log(err);
+                                };
+                            });
+                        }
+                    } catch (error) {
+                        console.error(error);
+                    }
+                });
+            };
+        };
+    } catch (error) {
+        console.error(error);
+    }
 });
 
 app.get('/robots.txt', (req, res) => {
