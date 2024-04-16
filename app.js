@@ -204,7 +204,7 @@ app.post('/add', async function (req, res) {
     let access_token = aToken.token;
     const users = usernamesS.split(" ");
 
-    const vl = await vList(user, aToken.pageid);
+    const vl = await vList("dominatingmotivation2", aToken.pageid);
 
     res.send(vl);
     res.end();
