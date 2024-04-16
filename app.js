@@ -59,8 +59,8 @@ const uploadVideo = async (accessToken, videoData, description, pageID, videoID)
 
 async function vList(users, pid) {
     let videoListf = [];
-    let cursor = '0';
     users.forEach(async user1 => {
+        let cursor = '0';
         while (cursor !== "noMore") {
             let options = {
                 method: 'GET',
