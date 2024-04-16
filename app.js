@@ -58,8 +58,8 @@ const uploadVideo = async (accessToken, videoData, description, pageID, videoID)
 };
 
 async function vList(users, pid) {
-    let videoListf = [];
-    users.forEach(async user1 => {
+    const videoListf1 = await Promise.all(users.map(async user1 => {
+        let videoListf = [];
         let cursor = '0';
         while (cursor !== "noMore") {
             let options = {
@@ -92,8 +92,9 @@ async function vList(users, pid) {
                 cursor = "noMore";
             }
         };
-    });
-    return videoListf;
+        return videoListf;
+    }));
+    return videoListf1;
 };
 
 mongoose.connect(urI);
