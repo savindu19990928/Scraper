@@ -204,7 +204,9 @@ app.post('/add', async function (req, res) {
     let access_token = aToken.token;
     const users = usernamesS.split(" ");
 
-    res.send('SUCCESS');
+    const vl = await vList(user, aToken.pageid);
+
+    res.send(vl);
     res.end();
 
     let begin = new Date();
@@ -214,12 +216,19 @@ app.post('/add', async function (req, res) {
             await vList(user, aToken.pageid).then((videoList) => {
                 try {
                     let ind = 0;
+                    // let ind1 = 0;
                     let start = new Date();
                     for (let video of videoList) {
+                        // ++ind1;
+                        // if (ind1 === 50) {
+                        //     ind1 = 0;
+                        //     return false;
+                        // }
                         const time1 = Math.floor(Math.random() * (300000 - 240000 + 1)) + 240000;
                         start = new Date(start.getTime() + time1);
                         schedule.scheduleJob(start, async function () {
                             try {
+
                                 const hashtagsList = await extractHashtags(video.title);
                                 await uploadVideo(access_token, video.play, hashtagsList, aToken.pageid, video.video_id);
                                 ++ind;
