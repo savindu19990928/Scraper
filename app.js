@@ -222,7 +222,6 @@ app.post('/add', async function (req, res) {
         let start = new Date();
         while (ind < videoList.length) {
             videoList = await vList(users, aToken.pageid);
-            console.log(videoList);
             for (let video of videoList) {
                 ++ind1;
                 if (ind1 === 50) {
