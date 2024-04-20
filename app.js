@@ -61,6 +61,7 @@ async function vList(users, pid) {
     const videoListf1 = await Promise.all(users.map(async user1 => {
         let videoListf = [];
         let cursor = '0';
+
         while (cursor !== "noMore") {
             let options = {
                 method: 'GET',
@@ -75,26 +76,30 @@ async function vList(users, pid) {
                     'X-RapidAPI-Host': 'tiktok-video-feature-summary.p.rapidapi.com'
                 }
             };
+
             const response = await axios.request(options);
 
             if (response.data.data.videos) {
-                response.data.data.videos.forEach(video => {
-                    Link.findOne({ link: video.video_id, page_id: pid }).then(result => {
-                        if (!result) {
-                            videoListf.push(video);
-                        }
-                    });
-                });
+                for (const video of response.data.data.videos) {
+                    const result = await Link.findOne({ link: video.video_id, page_id: pid });
+                    if (!result) {
+                        videoListf.push(video);
+                    }
+                }
             }
+
             if (response.data.data.hasMore === true) {
                 cursor = response.data.data.cursor;
             } else {
                 cursor = "noMore";
             }
-        };
+        }
+
         return videoListf;
     }));
-    return videoListf1;
+
+    const flattenedList = videoListf1.reduce((acc, val) => acc.concat(val), []);
+    return flattenedList;
 };
 
 mongoose.connect(urI);
@@ -211,7 +216,6 @@ app.post('/add', async function (req, res) {
     res.end();
 
     let videoList = await vList(users, aToken.pageid);
-    console.log(videoList.length);
     try {
         let ind = 0;
         let ind1 = 0;
