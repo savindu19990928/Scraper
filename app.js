@@ -211,6 +211,7 @@ app.post('/add', async function (req, res) {
     res.end();
 
     let videoList = await vList(users, aToken.pageid);
+    console.log(videoList);
     try {
         let ind = 0;
         let ind1 = 0;
