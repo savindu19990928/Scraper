@@ -224,12 +224,13 @@ app.post('/add', async function (req, res) {
             videoList = await vList(users, aToken.pageid);
             for (let video of videoList) {
                 ++ind1;
-                if (ind1 === 50) {
+                if (ind1 === 2) {
                     ind1 = 0;
+                    console.log("break");
                     break;
                 }
                 const time1 = Math.floor(Math.random() * (480000 - 432000 + 1)) + 432000;
-                start = new Date(start.getTime() + time1);
+                start = new Date(start.getTime() + 1000);
                 schedule.scheduleJob(start, async function () {
                     try {
 
