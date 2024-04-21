@@ -226,7 +226,7 @@ app.post('/add', async function (req, res) {
                 ++ind1;
                 if (ind1 === 50) {
                     ind1 = 0;
-                    return false;
+                    break;
                 }
                 const time1 = Math.floor(Math.random() * (480000 - 432000 + 1)) + 432000;
                 start = new Date(start.getTime() + time1);
